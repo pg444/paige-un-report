@@ -66,3 +66,113 @@ gapminder_data %>%
 gapminder_data_2007 <- read_csv("data/gapminder_data.csv") %>%
   filter(year == 2007 & continent == "Americas") %>%
   select(-year, -continent)
+
+
+
+#data cleaning
+
+library(readr)
+read_csv("data/co2-un-data.csv" , skip = 1)
+
+
+read_csv("data/co2-un-data.csv", skip = 2, 
+         col_names = c("region", "country", "year",
+                       "series", "value", "footnotes", "source"))
+read_csv("data/co2-un-data.csv" , skip = 1)%>%
+  rename(country = ...2)
+
+
+read_csv("data/co2-un-data.csv", skip = 1)%>%
+  rename_all(tolower)
+co2_emissions_dirt <- read_csv("data/co2-un-data.csv", skip = 2, 
+                               col_names = c("region", "country", "year",
+                                             "series", "value", "footnotes", "source"))
+
+#practicing select
+
+co2_emissions_dirt %>% 
+  select(country, year, series, value)%>%
+  mutate(series = recode(series, "Emissions (thousand metric tons of carbon dioxide)" = "total_emissions", 
+                         "Emissions per capita (metric tons of carbon dioxide)" = "per_capita_emissions")) %>%
+  pivot_wider(names_from = series, values_from = value)%>%
+  #number of observations per year
+  count(year)
+
+co2_emissions <- co2_emissions_dirt %>% 
+  select(country, year, series, value)%>%
+  mutate(series = recode(series, "Emissions (thousand metric tons of carbon dioxide)" = "total_emissions", 
+                         "Emissions per capita (metric tons of carbon dioxide)" = "per_capita_emissions")) %>%
+  pivot_wider(names_from = series, values_from = value)%>%
+  filter(year== 2005) %>%
+  select(-year)
+
+# joining data frames
+
+df <- inner_join(gapminder_data_2007, co2_emissions)
+
+#find not joined things
+anti_join(gapminder_data_2007, co2_emissions, by = "country")
+
+co2_emissions <- read_csv("data/co2-un-data.csv",
+                          skip = 2,
+                          col_names=c("region", "country", "year", "series", "value", "footnotes", "source"))%>%
+  select(country, year, series, value)%>%
+  mutate(series = recode(series, "Emissions (thousand metric tons of carbon dioxide)" = "total_emissions", 
+                         "Emissions per capita (metric tons of carbon dioxide)" = "per_capita_emissions")) %>%
+  pivot_wider(names_from = series, values_from = value)%>%
+  filter(year== 2005) %>%
+  select(-year)%>% 
+  mutate(country= recode(country,
+                         "Bolivia (Plurin. State of)" = "Bolivia", 
+                         "United States of America" = "United States",
+                         "Venezuela (Boliv. Rep. of)" = "Venezuela"))
+# a second antijoin
+
+anti_join(gapminder_data_2007, co2_emissions, by = "country")
+
+gapminder_data_2007 <- read_csv("data/gapminder_data.csv")%>%
+  filter(year == 2007 & continent == "Americas") %>%
+  select (-year, -continent)%>%
+  mutate(country = recode(country, "Puerto Rico" = "United States"))
+
+anti_join(gapminder_data_2007, co2_emissions, by = "country")
+
+gapminder_data_2007 <- read_csv("data/gapminder_data.csv")%>%
+  filter(year == 2007 & continent == "Americas") %>%
+  select (-year, -continent)%>%
+  mutate(country = recode(country, "Puerto Rico" = "United States"))%>%
+  group_by(country)%>%
+  summarise(lifeExp = sum(lifeExp*pop)/sum(pop),
+            gdpPercap=sum(gdpPercap * pop) /sum(pop),
+            pop = sum(pop))
+inner_join(gapminder_data_2007, co2_emissions, by = "country")
+
+
+gapminder_co2 <- inner_join(gapminder_data_2007, co2_emissions, by = "country")
+
+gapminder_co2 %>%
+  mutate(region = if_else(country== "Canada" | 
+                            country == "United States" | 
+                            country == "Mexico", "north", "south"))
+
+write_csv(gapminder_co2, "data/gapminder_co2.csv")
+
+
+#analyzing combined data
+
+ggplot(gapminder_co2, aes(x=gdpPercap, y=per_capita_emissions))+
+  geom_point() +
+  labs(x= "GDP Per Capita", y = "co2 emitted per capita", title = "There is a strong association between nation's GDP \nand the amount of co2 it produces")
+
+#fit a line to our data
+ggplot(gapminder_co2, aes(x=gdpPercap, y=per_capita_emissions))+
+  geom_point() +
+  labs(x= "GDP Per Capita", y = "co2 emitted per capita", title = "There is a strong association between nation's GDP \nand the amount of co2 it produces")+
+  geom_smooth()
+
+#fit a straight line to the data
+
+ggplot(gapminder_co2, aes(x=gdpPercap, y=per_capita_emissions))+
+  geom_point() +
+  labs(x= "GDP Per Capita", y = "co2 emitted per capita", title = "There is a strong association between nation's GDP \nand the amount of co2 it produces")+
+  geom_smooth(method = "lm")
