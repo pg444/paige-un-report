@@ -1,0 +1,64 @@
+---
+title: "Writing Reports with R Markdown"
+author: "Paige"
+date: "2022-10-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include=FALSE}
+library(tidyverse)
+library(here)
+library(knitr)
+```
+
+This report was prepared for the UN. It analyzes the relationship between a country's GDP, life expectancy, and CO2 emissions. Our goal was to determine to what degree a country's economic strength or weakness may be related to its public health status and impact on climate pollution. We hypothesize that both life expectancy and CO2 emissions will increase with a country's GDP.
+
+```{r data, include=FALSE}
+gapminder_1997 <- read_csv(here("data/gapminder_1997.csv"))
+```
+
+```{r gdp_lifeExp1997, echo=FALSE}
+ggplot(gapminder_1997, aes(x=gdpPercap, y=lifeExp, color=continent, size=pop/1000000))+
+  labs(x="GDP Per Capita", y="Life Expectancy", title = "Do People in Wealthy Countries Live Longer?", size= "Population in Millions")+
+  geom_point()
+```
+
+``` {r summary data, echo=FALSE}
+n_countries <- gapminder_1997%>%
+  select(country)%>%
+  n_distinct()
+n_minGDP <- min(gapminder_1997$gdpPercap)%>%round(digits = 2)
+n_maxGDP <- max(gapminder_1997$gdpPercap)%>%round(digits = 2)
+```
+
+
+The above plot shows the relationship between GDP per capita and life expectancy for a total of `r n_countries` countries. For this set of countries, economic wealth ranged from a minimum of $`r n_minGDP` to a maximum of $`r n_maxGDP`. 
+
+
+|Summary of Data |
+|------------|---------|
+|Number of Countries | `r n_countries`|
+|Minimum GDP per Capita| `r n_minGDP`|
+|Maximum GDP per Capita | `r n_maxGDP`|
+
+```{r tables}
+gapminder_1997%>%
+  filter(continent == "Oceania")%>%
+  kable()
+
+```
+
+### Lists unordered
+1. fave language is R because idk any others
+2. *i need to re learn stats but so far the tidyr cleaning columns and mutate or select is good* 
+3. ***i would love to be good at GIS i've been getting better but it is hard to work with census data and tables in GIS***
+4. [r markdown cheatsheet](chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+### ordered list
+- dsfsfs
+    - djff
+    - kjkjsdf

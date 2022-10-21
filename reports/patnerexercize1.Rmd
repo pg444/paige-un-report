@@ -1,0 +1,37 @@
+---
+title: "partnerexercizes"
+author: "Paige"
+date: "2022-10-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(tidyverse)
+library(knitr)
+library(here)
+```
+
+```{r gapminder}
+gapminder_data <- read_csv(here("data/gapminder_data.csv"))
+
+```
+
+```{r scatterplot}
+ggplot(gapminder_data)+
+  aes(x=year, y=pop/1000000, group= country)+
+  facet_wrap(vars(continent))+
+  labs(x= "year", y= "population in millions")+
+  geom_point()
+  
+
+```
+
+two outliers are countries in asia
+
+```{r outliers}
+
+```
